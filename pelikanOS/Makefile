@@ -8,7 +8,7 @@ boot.o: src/boot.asm
 	nasm -f elf32 src/boot.asm -o boot.o
 
 kernel.o: src/kernel.c
-	i686-linux-gnu-gcc -ffreestanding -c src/kernel.c -o kernel.o
+	i686-linux-gnu-gcc -ffreestanding -Wall -c src/kernel.c -o kernel.o
 
 iso: kernel.bin	
 	cp kernel.bin iso/boot/kernel.bin
