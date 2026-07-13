@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "gdt.h"
+#include "idt.h"
 
 int row=0;
 int col=0;
@@ -68,6 +69,7 @@ int printString(char *s , int string_len){
 
 
 void kmain(uint32_t magic, void  *mboot_info){
+    idt_init();
     gdt_init();
     char s[12] = {'P' , 'E' , 'L' , 'I' , 'K' , 'A' , 'N' , '\n', 'a' , 'K' , 'a', '\0'};
     int s_len = 11;

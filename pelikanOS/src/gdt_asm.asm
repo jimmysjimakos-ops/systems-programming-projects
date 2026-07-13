@@ -1,5 +1,3 @@
-section .note.GNU-stack noalloc noexec nowrite progbits
-
 section .text
 extern gdt_ptr 
 global gdt_load 
