@@ -15,7 +15,7 @@ void idt_set_entry(int index, uint32_t handler, uint16_t segment_selector, uint8
 }
 
 void idt_init(){
-    for(int i=0; i<32; i++){  //the rest cells are garbage havent implemented their stubs yet
+    for(int i = 0; i < 48; i++){  //the rest cells are garbage havent implemented their stubs yet
         idt_set_entry(i , isr_table[i] , 0x08 , 0 , 0x8E);
     }
     idt_ptr.base = (uint32_t) idt;

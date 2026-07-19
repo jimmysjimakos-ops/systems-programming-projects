@@ -35,6 +35,22 @@ ISR_NO_ERR 26
 ISR_NO_ERR 27
 ISR_NO_ERR 28
 ISR_NO_ERR 31
+ISR_NO_ERR 32
+ISR_NO_ERR 33
+ISR_NO_ERR 34
+ISR_NO_ERR 35
+ISR_NO_ERR 36
+ISR_NO_ERR 37
+ISR_NO_ERR 38
+ISR_NO_ERR 39
+ISR_NO_ERR 40
+ISR_NO_ERR 41
+ISR_NO_ERR 42
+ISR_NO_ERR 43
+ISR_NO_ERR 44
+ISR_NO_ERR 45
+ISR_NO_ERR 46
+ISR_NO_ERR 47
 ISR_ERR 8
 ISR_ERR 10
 ISR_ERR 11
@@ -53,7 +69,7 @@ isr_common:  ;every stub maps to this stub which does important things
     pusha    ;pushes all 8 general-registers to the stack in order to save their values , else they would be overwritten in my c handler
     push esp ;make esp point to the current stack top , just after all the registers,before the ir num and err_code
     call isr_handler ;calls the c handler
-    add esp, 8 ;remove the pushed args off of the stack(ir num and err code)
+    add esp, 4 ; remove pushed esp argument ( before i had it wrong , thinking i skipped the ir_num and err code here)
     popa     ;Restores the values of the pushed all 8 general registers
     add esp, 8  ;adds 8 bytes to the stack pointer top , cuz we have 2 error codes sitting there from the previous stubs isr% (the 2 dd words) basically skips 4 bytes 2 times
     iret     ;Special return for handlers that pops from EIP,CS,EFLAGS cuz normal rets only pop from EIP , then it continues the interrupted code with  only the saved stuff on the stack like normal
@@ -95,6 +111,22 @@ isr_table:
     dd isr29
     dd isr30
     dd isr31
+    dd isr32
+    dd isr33
+    dd isr34
+    dd isr35
+    dd isr36
+    dd isr37
+    dd isr38
+    dd isr39
+    dd isr40
+    dd isr41
+    dd isr42
+    dd isr43
+    dd isr44
+    dd isr45
+    dd isr46
+    dd isr47
 
 
     ;mental mode below 
