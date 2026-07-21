@@ -60,3 +60,23 @@ int printString(char *s , int string_len){
     }
     return 0;
 }
+
+int removeChar(){
+    if(vga.row > 0){
+        if(vga.col == 0){
+            vga.row--;
+            vga.col = 79;
+            vga.addr[(vga.row * 80 + vga.col)] = ' ';
+        }else if(vga.col > 0){
+            vga.col--;
+            vga.addr[(vga.row * 80 + vga.col)] = ' ';
+        }
+    }else{
+        if(vga.col > 0){
+            vga.col--;
+            vga.addr[(vga.row * 80 + vga.col)] = ' ';
+        }
+    }
+
+    return 0;
+}
