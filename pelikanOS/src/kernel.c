@@ -18,7 +18,9 @@ void kmain(uint32_t magic, void  *mboot_info){
         vga.addr[(vga.row * 80 + vga.col)] = ((0x0F << 8) | '/');
     }
 
-    asm volatile ("int $0x03"); //manual fire of an interrupt
+    
+    while(1){
+    asm volatile("hlt");
+    }
 
-    return;
 }
