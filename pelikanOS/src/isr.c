@@ -33,10 +33,11 @@
                 if(key == backspace){  //backspace , alt , shit , caps lock
                     removeChar();
                 }else if(key == enter){
-                    char newline_char = '\n';
-                    printString(&newline_char, 1);
+                    char buf[2] = {'\n','\0'};
+                    print(buf);
                 }else{
-                    printString(&key, 1);
+                    char buf[2] = {key, '\0'};
+                    print(buf);
                 }
             }
         }

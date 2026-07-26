@@ -25,7 +25,7 @@ int makeSpace(){ //every vga.row replaces its contents by the next vga.row
     return 0;
 }
 
-int mapToVGA(char s , int string_len){
+int mapToVGA(char s){
     if(s == '\n' && vga.row != 24){
         vga.col = 0;   
         vga.row++;
@@ -51,12 +51,11 @@ int mapToVGA(char s , int string_len){
     return 0;  //slight performance hinder i think
 }
 
-
-int printString(char *s , int string_len){
-    for(int i = 0; i < string_len; i++){
-        if(mapToVGA(s[i] , string_len) > 0){
-            return 1;
-        }
+int print(char *s){
+    int i = 0;
+    while(s[i] != '\0'){
+        mapToVGA(s[i]);
+        i++;
     }
     return 0;
 }
