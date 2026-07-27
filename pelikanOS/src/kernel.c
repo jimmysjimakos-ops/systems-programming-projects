@@ -10,18 +10,17 @@
 void kmain(uint32_t magic, void  *mboot_info){
     struct multiboot_info *mboot = (struct multiboot_info *) mboot_info;
     char buf[32];
-    itoa(mboot->mem_upper , buf);
-    pmm_init(mboot);
     gdt_init();
     idt_init();
     pic_remap();
     asm volatile("sti"); //enable interrupts
+    pmm_init(mboot);
+    uint32_t address = pmm_alloc_frame();
+    itoa(address, buf);
+    print(buf);
 
-    if(print(buf) > 0){
-        //not enough space
-    }else{
-        vga.addr[(vga.row * 80 + vga.col)] = ((0x0F << 8) | '/');
-    }
+    vga.addr[(vga.row * 80 + vga.col)] = ((0x0F << 8) | '/');
+    
 
     
     while(1){

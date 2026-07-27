@@ -1,3 +1,6 @@
+#ifndef MBOOT_H
+#define MBOOT_H
+
 #include <stdint.h>
 
 struct multiboot_info{
@@ -19,3 +22,5 @@ struct multiboot_mmap_entry{
     uint64_t len;
     uint32_t type; // 1 = available , everything else = reserved 
 };
+
+#endif

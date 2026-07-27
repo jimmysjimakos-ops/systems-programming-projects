@@ -3,6 +3,8 @@ ENTRY(_start)
 SECTIONS {
     . = 1M;
 
+    _kernel_start = .;
+
     .text : {
         *(.multiboot)
         *(.text)
@@ -20,4 +22,7 @@ SECTIONS {
         *(COMMON)
         *(.bss)
     }
+
+    _kernel_end = .;
+
 }

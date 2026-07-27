@@ -1,8 +1,7 @@
-
 all: kernel.bin
 
-kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o
-	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o -o kernel.bin
+kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o
+	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o -o kernel.bin
 
 boot.o: src/boot.asm
 	nasm -f elf32 src/boot.asm -o boot.o
@@ -34,6 +33,12 @@ isr.o:	src/isr.c
 isr_asm.o:	src/isr_asm.asm
 	nasm -f elf32 src/isr_asm.asm -o isr_asm.o
 
+pmm.o:	src/pmm.c
+	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/pmm.c -o pmm.o
+
+string.o:	src/string.c
+	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/string.c -o string.o
+
 iso: kernel.bin	
 	cp kernel.bin iso/boot/kernel.bin
 	grub-mkrescue -o pelikanos.iso iso
@@ -42,4 +47,4 @@ run: iso
 	qemu-system-i386 -cdrom pelikanos.iso
 
 clean:	
-	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o kernel.bin pelikanos.iso iso/boot/kernel.bin
+	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o kernel.bin pelikanos.iso iso/boot/kernel.bin
