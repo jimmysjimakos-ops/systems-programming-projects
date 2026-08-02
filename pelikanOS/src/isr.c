@@ -33,14 +33,22 @@
                 if(key == backspace){  //backspace , alt , shit , caps lock
                     removeChar();
                 }else if(key == enter){
-                    char buf[2] = {'\n','\0'};
-                    print(buf);
+                    char buf2[2] = {'\n','\0'};
+                    print(buf2);
                 }else{
-                    char buf[2] = {key, '\0'};
-                    print(buf);
+                    char buf2[2] = {key, '\0'};
+                    print(buf2);
                 }
             }
         }
+
+
+        if(frame->ir_num == 14){
+            char buf[2]={'n','\0'};
+            print(buf);
+            while(1) asm volatile("hlt");  // halt — can't recover
+        }
+
 
         if(frame->ir_num >= 32){
             outb(0x20, 0x20); //EOI TO MASTER

@@ -35,11 +35,12 @@ void pmm_init(struct multiboot_info *mboot){
         bitmap[i / 8] |= (1 << (i % 8));
     }
 
+    
     uint32_t kernel_start = (uint32_t)&_kernel_start; 
     uint32_t kernel_end = (uint32_t)&_kernel_end;
     start_frame = kernel_start / 4096;
-    end_frame = kernel_end / 4096;
-
+    end_frame = (kernel_end + 4095) / 4096;  // rounds up to 263
+    
     for(uint32_t frame = start_frame; frame < end_frame; frame++){
         bitmap[frame / 8] |= (1 << (frame % 8));
     }
