@@ -7,25 +7,27 @@
 #include "itoa.h"
 #include "pmm.h"
 #include "paging.h"
+#include "heap.h"
 
 void kmain(uint32_t magic, void  *mboot_info){
     struct multiboot_info *mboot = (struct multiboot_info *) mboot_info;
-    char buf[32];
     gdt_init();
     idt_init();
     pic_remap();
     asm volatile("sti"); //enable interrupts
     pmm_init(mboot);
     paging_init();
-    uint32_t address = pmm_alloc_frame();
     extern uint32_t _kernel_end;
-    char dbuf[32];
-    itoa((uint32_t)&_kernel_end, dbuf);
-    print("KEND: ");
-    print(dbuf);
-    print("\n");
-    volatile uint32_t *bad = (volatile uint32_t *)0x500000; // 5MB - unmapped
-    uint32_t test = *bad;
+    char dbuf1[32];
+    char dbuf2[32];
+    uint32_t *perma_pointer = (uint32_t *) kmalloc(100);
+    *perma_pointer = 42;
+    itoa((uint32_t)perma_pointer, dbuf1);
+    itoa((uint32_t)(*perma_pointer), dbuf2);
+    print(dbuf1);
+    print(dbuf2);
+    //volatile uint32_t *bad = (volatile uint32_t *)0x500000; // 5MB - unmapped
+    //uint32_t test = *bad;
 
     vga.addr[(vga.row * 80 + vga.col)] = ((0x0F << 8) | '/');
     
