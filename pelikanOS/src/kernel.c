@@ -8,6 +8,7 @@
 #include "pmm.h"
 #include "paging.h"
 #include "heap.h"
+#include "vmm.h"
 
 void kmain(uint32_t magic, void  *mboot_info){
     struct multiboot_info *mboot = (struct multiboot_info *) mboot_info;
@@ -16,7 +17,7 @@ void kmain(uint32_t magic, void  *mboot_info){
     pic_remap();
     asm volatile("sti"); //enable interrupts
     pmm_init(mboot);
-    paging_init();
+    vmm_init();
     extern uint32_t _kernel_end;
     char dbuf1[32];
     char dbuf2[32];

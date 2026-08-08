@@ -1,7 +1,7 @@
 all: kernel.bin
 
-kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o
-	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o -o kernel.bin
+kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o
+	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o -o kernel.bin
 
 boot.o: src/boot.asm
 	nasm -f elf32 src/boot.asm -o boot.o
@@ -45,6 +45,12 @@ paging.o:	src/paging.c
 heap.o:	src/heap.c
 	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/heap.c -o heap.o
 
+vmm.o:	src/vmm.c
+	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/vmm.c -o vmm.o
+
+itoa.o:	src/itoa.c
+	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/itoa.c -o itoa.o
+
 iso: kernel.bin	
 	cp kernel.bin iso/boot/kernel.bin
 	grub-mkrescue -o pelikanos.iso iso
@@ -53,4 +59,4 @@ run: iso
 	qemu-system-i386 -cdrom pelikanos.iso
 
 clean:	
-	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o kernel.bin pelikanos.iso iso/boot/kernel.bin
+	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o kernel.bin pelikanos.iso iso/boot/kernel.bin
