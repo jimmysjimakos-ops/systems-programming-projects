@@ -2,6 +2,7 @@
     #include "isr.h" 
     #include "vga.h"
     #include "io.h" 
+    #include "scheduler.h"
     #define backspace -1
     #define enter -2
     char scancode_to_ascii[128] = {
@@ -21,7 +22,13 @@
         uint8_t scancode;
 
         if(frame->ir_num == 32){
-            // timer tick — do nothing for now
+            outb(0x20, 0x20);
+            //static int ticks = 0;
+            //ticks++;
+            // write tick count to a fixed VGA cell
+            //volatile uint16_t *v = (volatile uint16_t *)0xB8000;
+            //[79] = (0x0F << 8) | ('0' + (ticks % 10));
+            schedule();
         }
 
         if(frame->ir_num == 33){  //keyboard

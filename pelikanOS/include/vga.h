@@ -12,3 +12,4 @@ int makeSpace();
 int mapToVGA(char s);
 int print(char *s);
 int removeChar();
+uint8_t *print_hex(uint8_t *buf,uint32_t num);

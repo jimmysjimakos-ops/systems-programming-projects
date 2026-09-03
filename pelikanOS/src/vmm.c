@@ -70,3 +70,8 @@ void vmm_unmap_page(uint32_t virt_addr){
     print(buf);
     print("\n");
 }
+
+
+uint32_t vmm_get_kernel_directory(){
+    return (uint32_t) page_directory;
+}

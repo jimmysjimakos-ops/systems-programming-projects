@@ -1,7 +1,7 @@
 all: kernel.bin
 
-kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o
-	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o -o kernel.bin
+kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o scheduler_asm.o
+	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o scheduler_asm.o -o kernel.bin
 
 boot.o: src/boot.asm
 	nasm -f elf32 src/boot.asm -o boot.o
@@ -51,6 +51,12 @@ vmm.o:	src/vmm.c
 itoa.o:	src/itoa.c
 	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/itoa.c -o itoa.o
 
+scheduler.o:	src/scheduler.c
+	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/scheduler.c -o scheduler.o
+
+scheduler_asm.o:	src/scheduler_asm.asm
+	nasm -f elf32 src/scheduler_asm.asm -o scheduler_asm.o
+
 iso: kernel.bin	
 	cp kernel.bin iso/boot/kernel.bin
 	grub-mkrescue -o pelikanos.iso iso
@@ -59,4 +65,4 @@ run: iso
 	qemu-system-i386 -cdrom pelikanos.iso
 
 clean:	
-	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o kernel.bin pelikanos.iso iso/boot/kernel.bin
+	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o scheduler_asm.o kernel.bin pelikanos.iso iso/boot/kernel.bin

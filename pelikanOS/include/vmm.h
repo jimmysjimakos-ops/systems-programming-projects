@@ -7,5 +7,6 @@
 void vmm_init();
 void vmm_map_page(uint32_t virt_addr, uint32_t phys);
 void vmm_unmap_page(uint32_t virt_addr);
+uint32_t vmm_get_kernel_directory();
 
 #endif
