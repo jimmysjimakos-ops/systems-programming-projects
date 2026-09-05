@@ -1,4 +1,5 @@
 #include "vga.h"
+#include "io.h"
 
 struct vga_state vga = {0, 0, (volatile uint16_t *)0xB8000};
   
@@ -51,12 +52,14 @@ int mapToVGA(char s){
     return 0;  //slight performance hinder i think
 }
 
-int print(char *s){
+int print(char *s){ //this is a shared function , 2 threads can access this and run it , which means vga.col and vga.col are shared
+    uint32_t flags = save_flags_and_cli();
     int i = 0;
     while(s[i] != '\0'){
         mapToVGA(s[i]);
         i++;
     }
+    restore_flags(flags);
     return 0;
 }
 
