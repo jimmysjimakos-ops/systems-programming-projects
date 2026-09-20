@@ -1,3 +1,4 @@
 *.o
 *.bin
 *.iso
+my_malloc/test
