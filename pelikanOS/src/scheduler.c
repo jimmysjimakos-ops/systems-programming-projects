@@ -17,6 +17,7 @@ typedef struct task{   //this should be encapsulated
 }task_t;
 */
 
+static int num_of_tasks;
 static task_t *last_inserted;
 task_t *current_task;
 
@@ -36,14 +37,14 @@ void insert_task(task_t *task){
 }
 
 
-task_t *create_task(void (execution_code)()){
+task_t *create_task(void (execution_code)() , int id){
     task_t *task = (task_t *) kmalloc(sizeof(task_t));
     task->stack_base = pmm_alloc_frame();
     task->ESP = task->stack_base + 4096; //stack grows down , so start from the end of the 4KB block and work up
     task->EIP = (uint32_t) execution_code;
     task->state = TASK_READY;
     task->page_directory = vmm_get_kernel_directory(); //page_dir in vmm is static and needs a getter func
-    task->id = 1; //hardcode for now but gonna be incremental
+    task->id = id; 
     //when a new task is loaded for the first time , pop and ret read garbage --> must push fake data
     uint32_t *stack_top = (uint32_t *) task->ESP;
     *(--stack_top) = (uint32_t) execution_code; //esp points to one past the end of our frame , so we first decrement then store
@@ -54,16 +55,31 @@ task_t *create_task(void (execution_code)()){
     *(--stack_top) = 0;  // fake EBX  
     task->ESP = (uint32_t) stack_top;
     insert_task(task);
+    num_of_tasks++;
     return task; //optional , just if i need it in the future 
 }
 
 
 void schedule(){
-    if(!current_task){
-        char buf[32] = "NO TASK \n";
-        print(buf);
-        return;
-    }
+    if(!current_task) return;
+    uint32_t now;
+    asm volatile("pushf; pop %0" : "=r"(now));
+    ((volatile uint16_t*)0xB8000)[76] = (0x0F<<8)| ((now & 0x200) ? '1' : '0');
     task_t *next = current_task->next;
+    while(next->state != TASK_READY){
+        next = next->next;
+    }
+    if(current_task->state == TASK_RUNNING){
+        current_task->state = TASK_READY;
+    }
+    next->state = TASK_RUNNING;
     context_switch(next);
+}
+
+int get_num_of_tasks(){
+    return num_of_tasks;
+}
+
+task_t *get_current_task(){
+    return current_task;
 }

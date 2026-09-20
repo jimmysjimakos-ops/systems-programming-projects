@@ -18,15 +18,15 @@ void vmm_init(){
     }
     page_directory[0] = (uint32_t) page_table | PAGE_PRESENT | PAGE_RW;
     char dbuf[32];
-    print("VMM: page directory at ");
+    //print("VMM: page directory at ");
     itoa((uint32_t)page_directory, dbuf);
-    print(dbuf);
-    print("\n");
-    print("VMM: identity mapped first 4MB\n");
+    //print(dbuf);
+    //print("\n");
+    //print("VMM: identity mapped first 4MB\n");
     load_CR3((uint32_t) page_directory);
-    print("VMM: CR3 loaded\n");
+    //print("VMM: CR3 loaded\n");
     flip_bit_31();
-    print("VMM: paging enabled\n");
+    //print("VMM: paging enabled\n");
 }
 
 void vmm_map_page(uint32_t virt_addr, uint32_t phys_addr){
@@ -38,23 +38,23 @@ void vmm_map_page(uint32_t virt_addr, uint32_t phys_addr){
         memset(new_table, 0, 4096);
         page_directory[dir_index] = (uint32_t)new_table | PAGE_PRESENT | PAGE_RW;
         char buf[32];
-        print("VMM: new page table for dir ");
+        //print("VMM: new page table for dir ");
         itoa(dir_index, buf);
-        print(buf);
-        print("\n");
+        //print(buf);
+        //print("\n");
     }
 
     uint32_t *page_table = (uint32_t *)(page_directory[dir_index] & 0xFFFFF000);
     page_table[table_index] = phys_addr | PAGE_PRESENT | PAGE_RW;
 
     char vbuf[32], pbuf[32];
-    print("VMM: mapped ");
+    //print("VMM: mapped ");
     itoa(virt_addr, vbuf);
-    print(vbuf);
-    print(" -> ");
+    //print(vbuf);
+    //print(" -> ");
     itoa(phys_addr, pbuf);
-    print(pbuf);
-    print("\n");
+    //print(pbuf);
+    //print("\n");
 }
 
 void vmm_unmap_page(uint32_t virt_addr){
@@ -65,10 +65,10 @@ void vmm_unmap_page(uint32_t virt_addr){
     asm volatile("invlpg (%0)" : : "r"(virt_addr) : "memory");
 
     char buf[32];
-    print("VMM: unmapped ");
+    //print("VMM: unmapped ");
     itoa(virt_addr, buf);
-    print(buf);
-    print("\n");
+    //print(buf);
+    //print("\n");
 }
 
 

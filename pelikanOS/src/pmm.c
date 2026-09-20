@@ -29,14 +29,14 @@ void pmm_init(struct multiboot_info *mboot){
         }
         current += entry->size + 4; //multiboot quirk , some stupid shit
     }
-    print("PMM: frames freed\n");
+    //print("PMM: frames freed\n");
 
     // Protect first 1MB
     for(int i = 0; i < 256; i++){  // 256 frames = 1MB
         bitmap[i / 8] |= (1 << (i % 8));
     }
 
-    print("PMM: first 1MB protected\n");
+    //print("PMM: first 1MB protected\n");
     
     uint32_t kernel_start = (uint32_t)&_kernel_start; 
     uint32_t kernel_end = (uint32_t)&_kernel_end;
@@ -46,15 +46,15 @@ void pmm_init(struct multiboot_info *mboot){
     for(uint32_t frame = start_frame; frame < end_frame; frame++){
         bitmap[frame / 8] |= (1 << (frame % 8));
     }
-    print("PMM: kernel protected (start: ");
+    //print("PMM: kernel protected (start: ");
     char buf[32];
     char buf2[32];
     itoa(start_frame , buf);
-    print(buf);
-    print(" end: ");
+    //print(buf);
+    //print(" end: ");
     itoa(end_frame , buf2);
-    print(buf2);
-    print(")\n");
+    //print(buf2);
+    //print(")\n");
 }
 
 uint32_t pmm_alloc_frame(){
@@ -62,15 +62,15 @@ uint32_t pmm_alloc_frame(){
         if(!(bitmap[frame / 8] & (1 << (frame % 8)))){
             bitmap[frame / 8] |= (1 << (frame % 8)); //set bit to used
             uint32_t addr = frame * 4096;
-            print("PMM: alloc frame ");
+            //print("PMM: alloc frame ");
             char buf[32];
             itoa(addr, buf);
-            print(buf);
-            print('\n');
+            //print(buf);
+            //print('\n');
             return addr; //retruns physical address
         }
     }
-    print("PMM: OUT OF MEMORY\n");
+    //print("PMM: OUT OF MEMORY\n");
     return 0xFFFFFFFF;
 }
 
@@ -78,9 +78,9 @@ void pmm_free_frame(uint32_t frame_addr){
     uint32_t frame_num;
     frame_num = frame_addr / 4096;
     bitmap[frame_num / 8] &= ~(1 << (frame_num % 8));
-    print("PMM: freed frame ");
+    //print("PMM: freed frame ");
     char buf[32];
     itoa(frame_num, buf);
-    print(buf);
-    print("\n");
+    //print(buf);
+    //print("\n");
 }

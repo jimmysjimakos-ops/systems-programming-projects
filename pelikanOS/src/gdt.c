@@ -23,5 +23,5 @@ void gdt_init() {
     gdt_ptr.base = (uint32_t)gdt;
     gdt_ptr.limit = sizeof(gdt) - 1;
     gdt_load();
-    print("GDT: loaded (3 entries)\n");
+    //print("GDT: loaded (3 entries)\n");
 }

@@ -31,10 +31,10 @@ block_t *request_space(block_t *last, uint32_t size){
         block->prev = 0;
     }
     char buf[32];
-    print("HEAP: new frame at ");
+    //print("HEAP: new frame at ");
     itoa((uint32_t)raw, buf);
-    print(buf);
-    print("\n");
+    //print(buf);
+    //print("\n");
     return block;
 }
 
@@ -52,10 +52,10 @@ void *kmalloc(uint32_t size){
         }
         head = block;
         char buf[32];
-        print("HEAP: first alloc, size ");
+        //print("HEAP: first alloc, size ");
         itoa(size, buf);
-        print(buf);
-        print("\n");
+        //print(buf);
+        //print("\n");
         return (void *) (block + 1);
     }
 
@@ -67,10 +67,10 @@ void *kmalloc(uint32_t size){
             if(current->size == size){
                 current->free = 0;
                 char buf[32];
-                print("HEAP: exact fit, size ");
+                //print("HEAP: exact fit, size ");
                 itoa(size, buf);
-                print(buf);
-                print("\n");
+                //print(buf);
+                //print("\n");
                 return (void*) (current + 1);
             }else if(current->size >= size + BLOCK_SIZE + 1){
                 block_t *new_block = (block_t *)((uint8_t *)(current + 1) + size);
@@ -84,10 +84,10 @@ void *kmalloc(uint32_t size){
                 current->next = new_block;
 
                 char buf[32];
-                print("HEAP: split, size ");
+                //print("HEAP: split, size ");
                 itoa(size, buf);
-                print(buf);
-                print("\n");
+                //print(buf);
+                //print("\n");
                 return (void *)(current + 1);
             }
         }
@@ -101,10 +101,10 @@ void *kmalloc(uint32_t size){
         return 0;
     }
     char buf[32];
-    print("HEAP: new frame alloc, size ");
+    //print("HEAP: new frame alloc, size ");
     itoa(size, buf);
-    print(buf);
-    print("\n");
+    //print(buf);
+    //print("\n");
     return (void *) (block + 1);
 }
 
@@ -117,9 +117,9 @@ void kfree(void *ptr){
     block_t *block = (block_t *) ptr - 1;
     block->free = 1;
     char buf[32];
-    print("HEAP: freed block, size ");
+    //print("HEAP: freed block, size ");
     itoa(block->size, buf);
-    print(buf);
+    //print(buf);
 
     if(block->next && block->next->free == 1){
         block_t *next = block->next;
@@ -128,7 +128,7 @@ void kfree(void *ptr){
         if(next->next){
             block->next->prev = block;
         }
-        print(" +coalesced next");
+        //print(" +coalesced next");
     }
     if(block->prev && block->prev->free == 1){
         block_t *prev = block->prev;
@@ -139,7 +139,7 @@ void kfree(void *ptr){
                 block->next->prev = prev;
             }
         }
-        print(" +coalesced prev");
+        //print(" +coalesced prev");
     }
-    print("\n");
+    //print("\n");
 }

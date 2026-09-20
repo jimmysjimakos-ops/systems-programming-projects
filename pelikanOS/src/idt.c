@@ -23,5 +23,5 @@ void idt_init(){
     idt_ptr.base = (uint32_t) idt;
     idt_ptr.limit = sizeof(idt) - 1;
     idt_load();
-    print("IDT: loaded (48 entries wired)\n");
+    //print("IDT: loaded (48 entries wired)\n");
 }

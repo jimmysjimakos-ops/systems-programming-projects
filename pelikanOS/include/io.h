@@ -1,3 +1,6 @@
+#ifndef IO_H
+#define IO_H
+
 #include <stdint.h>
 
 static inline void outb(uint16_t port, uint8_t byte_value){
@@ -19,3 +22,5 @@ static inline uint32_t save_flags_and_cli(){
 static inline void restore_flags(uint32_t flags){
     asm volatile("pushl %0\n\t" "popfl" :: "r"(flags) : "memory");
 }
+
+#endif
