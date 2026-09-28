@@ -28,7 +28,7 @@ int makeSpace(){ //every vga.row replaces its contents by the next vga.row
 
 int mapToVGA(char s){
     if(s == '\n' && vga.row != 24){
-        vga.col = 0;
+        vga.col = 0;   
         vga.row++;
         return 0;
     }else if(s == '\n' && vga.row == 24){
@@ -38,33 +38,28 @@ int mapToVGA(char s){
 
     if(vga.row < 25){
         if(vga.col < 80){
-            int idx = vga.row * 80 + vga.col;
-            if(idx < 0 || idx > 1999){
-                ((volatile uint16_t*)0xB8000)[79] = (0x0F<<8)|'!';   // OUT OF BOUNDS
-                return 0;
-            }
-            vga.addr[idx] = ((0x0F << 8) | s);
+            vga.addr[(vga.row * 80 + vga.col)] = ((0x0F << 8) | s);
         }
         vga.col++;
         if(vga.col >= 80){
-            vga.col = 0;
+            vga.col = 0; //reset
             vga.row++;
             if(vga.row >= 25){
                 makeSpace();
             }
         }
     }
-    return 0;
+    return 0;  //slight performance hinder i think
 }
 
 int print(char *s){ //this is a shared function , 2 threads can access this and run it , which means vga.col and vga.col are shared
-    //uint32_t flags = save_flags_and_cli();
+    uint32_t flags = save_flags_and_cli();
     int i = 0;
     while(s[i] != '\0'){
         mapToVGA(s[i]);
         i++;
     }
-   // restore_flags(flags);
+    restore_flags(flags);
     return 0;
 }
 

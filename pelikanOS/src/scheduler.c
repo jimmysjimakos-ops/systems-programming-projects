@@ -4,22 +4,18 @@
 #include "vmm.h"
 #include "vga.h"
 
-/*
-typedef struct task{   //this should be encapsulated
-    uint32_t ESP;
-    uint32_t EIP;
-    uint32_t *page_directory;
-    uint8_t state;
-    uint32_t *stack_base;
-    uint32_t id;
-    struct task *next;
-    struct task *prev;
-}task_t;
-*/
-
 static int num_of_tasks;
 static task_t *last_inserted;
 task_t *current_task;
+rd_q queue = {0,0};
+
+
+
+void ready_queue_init(rd_q *q){  //may stand unused
+    q->queue_head = 0;
+    q->queue_tail = 0;
+}
+
 
 void insert_task(task_t *task){
     if(last_inserted){
@@ -30,7 +26,6 @@ void insert_task(task_t *task){
     }else{
         task->next = task; //link to itself i guess
         task->prev = task; //same
-        current_task = task;
     }
     
     last_inserted = task;
@@ -39,10 +34,14 @@ void insert_task(task_t *task){
 
 task_t *create_task(void (execution_code)() , int id){
     task_t *task = (task_t *) kmalloc(sizeof(task_t));
-    task->stack_base = pmm_alloc_frame();
-    task->ESP = task->stack_base + 4096; //stack grows down , so start from the end of the 4KB block and work up
+    task->stack_base = pmm_alloc_contiguous(4);
+    char sbuf[32];
+    print("stack id="); itoa(id, sbuf); print(sbuf);
+    print(" base="); itoa(task->stack_base, sbuf); print(sbuf);
+    print(" end="); itoa(task->stack_base + 16384, sbuf); print(sbuf);
+    print("\n");
+    task->ESP = task->stack_base + 16384;
     task->EIP = (uint32_t) execution_code;
-    task->state = TASK_READY;
     task->page_directory = vmm_get_kernel_directory(); //page_dir in vmm is static and needs a getter func
     task->id = id; 
     //when a new task is loaded for the first time , pop and ret read garbage --> must push fake data
@@ -54,26 +53,20 @@ task_t *create_task(void (execution_code)() , int id){
     *(--stack_top) = 0;  // fake ESI
     *(--stack_top) = 0;  // fake EBX  
     task->ESP = (uint32_t) stack_top;
+    
+    if(current_task == 0){
+        task->state = TASK_RUNNING; //idle task , task 0
+        current_task = task;
+    }else{  
+        task->state = TASK_READY; //not idle task , other
+        add_task_to_ready_queue(&queue , task); 
+    }
+    
+   task->state = TASK_READY; //not idle task , other
+        add_task_to_ready_queue(&queue , task); 
     insert_task(task);
     num_of_tasks++;
     return task; //optional , just if i need it in the future 
-}
-
-
-void schedule(){
-    if(!current_task) return;
-    uint32_t now;
-    asm volatile("pushf; pop %0" : "=r"(now));
-    ((volatile uint16_t*)0xB8000)[76] = (0x0F<<8)| ((now & 0x200) ? '1' : '0');
-    task_t *next = current_task->next;
-    while(next->state != TASK_READY){
-        next = next->next;
-    }
-    if(current_task->state == TASK_RUNNING){
-        current_task->state = TASK_READY;
-    }
-    next->state = TASK_RUNNING;
-    context_switch(next);
 }
 
 int get_num_of_tasks(){
@@ -82,4 +75,52 @@ int get_num_of_tasks(){
 
 task_t *get_current_task(){
     return current_task;
+} 
+
+uint8_t isempty_ready_queue(rd_q *q){
+    return q->queue_head == 0;
 }
+
+void add_task_to_ready_queue(rd_q *q , task_t *task){
+    if(!isempty_ready_queue(q)){
+        task->ready_next = 0;
+        q->queue_tail->ready_next = task;
+        q->queue_tail = task;
+    }else{
+        q->queue_head=task;
+        q->queue_tail=task;
+    }
+}
+
+
+task_t *remove_task_from_ready_queue(rd_q *q){
+    if(isempty_ready_queue(q)){
+        return 0;
+    }
+    task_t *task = q->queue_head;
+    if(task->ready_next== 0){
+        q->queue_head = 0;
+        q->queue_tail = 0;
+    }else{
+        q->queue_head = task->ready_next;
+    }
+    task->ready_next = 0; //disconnect it from the FIFO list
+    return task;
+}
+
+
+void schedule(){
+    if(!current_task) return;
+    if(isempty_ready_queue(&queue)) return;  // idle is never dequed
+    
+    if(current_task->state == TASK_RUNNING){
+        current_task->state = TASK_READY;
+        add_task_to_ready_queue(&queue , current_task);
+    }
+    
+    task_t *task = remove_task_from_ready_queue(&queue);
+    task->state = TASK_RUNNING;
+    context_switch(task); //current task is updated in asm
+}
+
+

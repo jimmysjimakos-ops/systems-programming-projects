@@ -49,8 +49,13 @@ void isr_handler(struct interrupt_frame *frame){ //this interrupt runs multiple 
 
 
     if(frame->ir_num == 14){
-        char buf[2]={'n','\0'};
-        print(buf);
-        while(1) asm volatile("hlt");  // halt — can't recover
+        uint32_t cr2;
+        asm volatile("mov %%cr2, %0" : "=r"(cr2));
+        print("PAGE FAULT\n");
+        char buf[32];
+        print("addr: "); itoa(cr2, buf); print(buf); print("\n");
+        print("eip: "); itoa(frame->eip, buf); print(buf); print("\n");
+        print("err: "); itoa(frame->err_code, buf); print(buf); print("\n");
+        while(1) asm volatile("hlt");
     }
 }

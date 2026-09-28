@@ -16,5 +16,5 @@ context_switch:     ;esp is my first field so no offset needed
     pop EDI;
     pop ESI;
     pop EBX; 
-    sti  ;enable interrupts again so task switching is possible, they disable on each ISR call
+    ;sti  ;enable interrupts again so task switching is possible, they disable on each ISR call
     ret;

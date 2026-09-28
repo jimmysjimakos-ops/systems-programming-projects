@@ -47,12 +47,12 @@ void pmm_init(struct multiboot_info *mboot){
         bitmap[frame / 8] |= (1 << (frame % 8));
     }
     //print("PMM: kernel protected (start: ");
-    char buf[32];
-    char buf2[32];
-    itoa(start_frame , buf);
+    //char buf[32];
+    //char buf2[32];
+    //itoa(start_frame , buf);
     //print(buf);
     //print(" end: ");
-    itoa(end_frame , buf2);
+    //itoa(end_frame , buf2);
     //print(buf2);
     //print(")\n");
 }
@@ -63,12 +63,12 @@ uint32_t pmm_alloc_frame(){
             bitmap[frame / 8] |= (1 << (frame % 8)); //set bit to used
             uint32_t addr = frame * 4096;
             //print("PMM: alloc frame ");
-            char buf[32];
-            itoa(addr, buf);
+            //char buf[32];
+            //itoa(addr, buf);
             //print(buf);
             //print('\n');
             return addr; //retruns physical address
-        }
+        } 
     }
     //print("PMM: OUT OF MEMORY\n");
     return 0xFFFFFFFF;
@@ -79,8 +79,34 @@ void pmm_free_frame(uint32_t frame_addr){
     frame_num = frame_addr / 4096;
     bitmap[frame_num / 8] &= ~(1 << (frame_num % 8));
     //print("PMM: freed frame ");
-    char buf[32];
-    itoa(frame_num, buf);
+    //char buf[32];
+    //itoa(frame_num, buf);
     //print(buf);
     //print("\n");
+}
+
+uint32_t pmm_alloc_contiguous(int n){//sliding window type
+    uint8_t found = 0;
+    uint32_t start = 0;
+    uint32_t end= 0;
+    while(end < MAX_FRAMES){
+        if(!(bitmap[end / 8] & (1 << (end % 8)))){
+            
+            if((end - start + 1) == n){
+                found = 1;
+                break;
+            }
+            end++;
+        }else{
+            end++;
+            start = end; 
+        }
+    }
+    if(!found){
+        return 0xFFFFFFFF;
+    }
+    for(uint32_t f = start; f <= end; f++){
+        bitmap[f / 8] |= (1 << (f % 8));
+    }
+    return start * 4096;
 }
