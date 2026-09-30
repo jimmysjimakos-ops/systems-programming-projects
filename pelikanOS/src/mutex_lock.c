@@ -36,7 +36,7 @@ void mutex_lock(mutex_t *lock){
         task_t *me = get_current_task();
         me->state = TASK_BLOCKED;
         add_task_to_mutex_queue(me, lock);
-        schedule();                 // interrupts still OFF; switch away
+        yield();                 // interrupts still OFF; switch away
         // resumed here after being woken; loop re-checks locked
     }
     lock->locked = 1;

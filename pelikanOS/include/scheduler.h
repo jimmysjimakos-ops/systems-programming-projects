@@ -33,9 +33,11 @@ void insert_task(task_t *task);
 void remove_task(uint32_t *task);
 int get_num_of_tasks();
 task_t *get_current_task();
-extern void context_switch(task_t *task); 
+//extern void context_switch(task_t *task); 
 extern rd_q queue;
 void ready_queue_init(rd_q *q);
-extern void swtch(uint32_t *old_esp, uint32_t new_esp);\
+extern void swtch(uint32_t *old_esp, uint32_t new_esp);
+void schedule();
+void yield();
 
 #endif

@@ -1,64 +1,64 @@
 all: kernel.bin
 
-kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o scheduler_asm.o mutex_lock.o
-	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o scheduler_asm.o mutex_lock.o -o kernel.bin
+kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o
+	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o -o kernel.bin
 
 boot.o: src/boot.asm
 	nasm -f elf32 src/boot.asm -o boot.o
 
 kernel.o: src/kernel.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/kernel.c -o kernel.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/kernel.c -o kernel.o
 
 gdt.o:	src/gdt.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/gdt.c -o gdt.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/gdt.c -o gdt.o
 
 gdt_asm.o:	src/gdt_asm.asm
-	nasm -f elf32 src/gdt_asm.asm -o gdt_asm.o
+	nasm -f elf32 -g -F dwarf src/gdt_asm.asm -o gdt_asm.o
 
 idt.o:	src/idt.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/idt.c -o idt.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/idt.c -o idt.o
 
 idt_asm.o:	src/idt_asm.asm
-	nasm -f elf32 src/idt_asm.asm -o idt_asm.o
+	nasm -f elf32 -g -F dwarf src/idt_asm.asm -o idt_asm.o
 
 pic.o:	src/pic.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/pic.c -o pic.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/pic.c -o pic.o
 
 vga.o:	src/vga.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/vga.c -o vga.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/vga.c -o vga.o
 
 isr.o:	src/isr.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/isr.c -o isr.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/isr.c -o isr.o
 
 isr_asm.o:	src/isr_asm.asm
-	nasm -f elf32 src/isr_asm.asm -o isr_asm.o
+	nasm -f elf32 -g -F dwarf src/isr_asm.asm -o isr_asm.o
 
 pmm.o:	src/pmm.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/pmm.c -o pmm.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/pmm.c -o pmm.o
 
 string.o:	src/string.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/string.c -o string.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/string.c -o string.o
 
 paging.o:	src/paging.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/paging.c -o paging.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/paging.c -o paging.o
 
 heap.o:	src/heap.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/heap.c -o heap.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/heap.c -o heap.o
 
 vmm.o:	src/vmm.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/vmm.c -o vmm.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/vmm.c -o vmm.o
 
 itoa.o:	src/itoa.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/itoa.c -o itoa.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/itoa.c -o itoa.o
 
 scheduler.o:	src/scheduler.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/scheduler.c -o scheduler.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/scheduler.c -o scheduler.o
 
-scheduler_asm.o:	src/scheduler_asm.asm
-	nasm -f elf32 src/scheduler_asm.asm -o scheduler_asm.o
+swtch.o:	src/swtch.asm
+	nasm -f elf32 -g -F dwarf src/swtch.asm -o swtch.o
 
 mutex_lock.o:	src/mutex_lock.c
-	i686-linux-gnu-gcc -ffreestanding -Wall -Wextra -I include -c src/mutex_lock.c -o mutex_lock.o
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/mutex_lock.c -o mutex_lock.o
 
 iso: kernel.bin	
 	cp kernel.bin iso/boot/kernel.bin
@@ -68,4 +68,8 @@ run: iso
 	qemu-system-i386 -cdrom pelikanos.iso
 
 clean:	
-	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o scheduler_asm.o mutex_lock.o kernel.bin pelikanos.iso iso/boot/kernel.bin
+	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o kernel.bin pelikanos.iso iso/boot/kernel.bin
+
+debug: iso
+	qemu-system-i386 -cdrom pelikanos.iso -s -S &
+	gdb kernel.bin -ex "target remote localhost:1234"

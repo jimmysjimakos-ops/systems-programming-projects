@@ -48,12 +48,13 @@ task_t *create_task(void (execution_code)() , int id){
     uint32_t *stack_top = (uint32_t *) task->ESP;
     *(--stack_top) = (uint32_t) execution_code; //esp points to one past the end of our frame , so we first decrement then store
     //also we put the func pointer first so when everything else gets popped , we ret into the func 
-    *(--stack_top) = 0;  // fake EBP
-    *(--stack_top) = 0;  // fake EDI
-    *(--stack_top) = 0;  // fake ESI
-    *(--stack_top) = 0;  // fake EBX  
+    *(--stack_top) = 0x202;                        // EFLAGS
+    *(--stack_top) = 0;  // EBX
+    *(--stack_top) = 0;  // ESI
+    *(--stack_top) = 0;  // EDI
+    *(--stack_top) = 0;  // EBP 
     task->ESP = (uint32_t) stack_top;
-    
+    /*
     if(current_task == 0){
         task->state = TASK_RUNNING; //idle task , task 0
         current_task = task;
@@ -61,9 +62,9 @@ task_t *create_task(void (execution_code)() , int id){
         task->state = TASK_READY; //not idle task , other
         add_task_to_ready_queue(&queue , task); 
     }
-    
-   task->state = TASK_READY; //not idle task , other
-        add_task_to_ready_queue(&queue , task); 
+    */
+    task->state = TASK_READY;
+    add_task_to_ready_queue(&queue, task);
     insert_task(task);
     num_of_tasks++;
     return task; //optional , just if i need it in the future 
@@ -108,7 +109,7 @@ task_t *remove_task_from_ready_queue(rd_q *q){
     return task;
 }
 
-
+/*
 void schedule(){
     if(!current_task) return;
     if(isempty_ready_queue(&queue)) return;  // idle is never dequed
@@ -122,5 +123,29 @@ void schedule(){
     task->state = TASK_RUNNING;
     context_switch(task); //current task is updated in asm
 }
+*/
 
 
+uint32_t scheduler_context;
+void schedule(){
+    while(1){
+        task_t *next = remove_task_from_ready_queue(&queue);
+        if(!next){
+            continue;
+        }
+
+        next->state = TASK_RUNNING;
+        current_task = next;
+        swtch(&scheduler_context, next->ESP); //rets here when it yields back
+        //decide what to do with the current task
+        if(current_task->state == TASK_RUNNING){
+            current_task->state = TASK_READY;
+            add_task_to_ready_queue(&queue, current_task);
+        }
+    }
+}
+
+
+void yield(){
+    swtch(&current_task->ESP, scheduler_context);
+}

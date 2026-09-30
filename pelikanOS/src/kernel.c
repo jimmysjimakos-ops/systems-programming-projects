@@ -15,19 +15,20 @@
 
 mutex_t lock;
 
+void task_a(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("A");  mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++);  } }
+void task_b(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("B");  mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_c(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("C");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
+void task_d(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("D");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
+void task_e(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("E");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
 
-void task_a(){asm volatile("sti"); while(1){ print("A"); for(volatile int i=0;i<3000000;i++); } }
-void task_b(){asm volatile("sti"); while(1){ print("B"); for(volatile int i=0;i<3000000;i++); } }
-void task_c(){asm volatile("sti"); while(1){ print("C"); for(volatile int i=0;i<3000000;i++); } }
-void task_d(){asm volatile("sti"); while(1){ print("D"); for(volatile int i=0;i<3000000;i++); } }
-void task_e(){asm volatile("sti"); while(1){ print("E"); for(volatile int i=0;i<3000000;i++); } }
+
+void idle(){asm volatile("sti"); while(1) asm volatile("hlt"); }
 
 //void task_b(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("B"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
 //void task_c(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("C"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
 //void task_d(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("D"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
 //void task_e(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("E"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
 
-void idle(){while(1) asm volatile("hlt"); }
 
 
 void pit_init(uint32_t freq){
@@ -46,7 +47,6 @@ void kmain(uint32_t magic, void  *mboot_info){
     pmm_init(mboot);
     vmm_init();
 
-    asm volatile("sti"); //enable interrupts
 
     //extern uint32_t _kernel_end;
     //char dbuf1[32];
@@ -59,7 +59,6 @@ void kmain(uint32_t magic, void  *mboot_info){
     //print(dbuf2);
     //volatile uint32_t *bad = (volatile uint32_t *)0x500000; // 5MB - unmapped
     //uint32_t test = *bad;
-
     mutex_init(&lock);
     create_task(idle, 0);
     create_task(task_a, 1);
@@ -67,10 +66,11 @@ void kmain(uint32_t magic, void  *mboot_info){
     create_task(task_c, 3);
     create_task(task_d, 4);
     create_task(task_e, 5);
-
-    
+  
+    schedule();
     while(1){   
         asm volatile("hlt"); //allows interrupts to happen , halts the execution of kmain only
     }
 
 }
+
