@@ -64,9 +64,9 @@ void vmm_unmap_page(uint32_t virt_addr){
     page_table[table_index] = 0;
     asm volatile("invlpg (%0)" : : "r"(virt_addr) : "memory");
 
-    char buf[32];
+    //char buf[32];
     //print("VMM: unmapped ");
-    itoa(virt_addr, buf);
+    //itoa(virt_addr, buf);
     //print(buf);
     //print("\n");
 }

@@ -15,8 +15,8 @@
 
 mutex_t lock;
 
-void task_a(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("A");  mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++);  } }
-void task_b(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("B");  mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_a(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("A");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
+void task_b(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("B");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
 void task_c(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("C");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
 void task_d(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("D");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
 void task_e(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("E");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
@@ -45,7 +45,8 @@ void kmain(uint32_t magic, void  *mboot_info){
     pic_remap();
     pit_init(1000);
     pmm_init(mboot);
-    vmm_init();
+    extern uint32_t stack_bottom;   // from boot.asm
+    vmm_unmap_page((uint32_t)&stack_bottom - 4096);   // guard below boot stack
 
 
     //extern uint32_t _kernel_end;

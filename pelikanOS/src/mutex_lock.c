@@ -1,8 +1,8 @@
 #include "mutex_lock.h"
 
 void add_task_to_mutex_queue(task_t *task , mutex_t *lock){
+    task->mutex_wait_next = 0;
     if(!isempty_wait_queue(lock)){
-        task->mutex_wait_next = 0;
         lock->queue_tail->mutex_wait_next = task;
         lock->queue_tail = task;
     }else{

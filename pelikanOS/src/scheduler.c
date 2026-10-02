@@ -34,13 +34,11 @@ void insert_task(task_t *task){
 
 task_t *create_task(void (execution_code)() , int id){
     task_t *task = (task_t *) kmalloc(sizeof(task_t));
-    task->stack_base = pmm_alloc_contiguous(4);
-    char sbuf[32];
-    print("stack id="); itoa(id, sbuf); print(sbuf);
-    print(" base="); itoa(task->stack_base, sbuf); print(sbuf);
-    print(" end="); itoa(task->stack_base + 16384, sbuf); print(sbuf);
-    print("\n");
-    task->ESP = task->stack_base + 16384;
+    uint32_t base = pmm_alloc_contiguous(2);
+    vmm_unmap_page(base);
+    // guard = base + 4096 guard is 1 frame 
+    task->stack_base = base + 4096;
+    task->ESP = task->stack_base + 4096;
     task->EIP = (uint32_t) execution_code;
     task->page_directory = vmm_get_kernel_directory(); //page_dir in vmm is static and needs a getter func
     task->id = id; 
@@ -48,7 +46,6 @@ task_t *create_task(void (execution_code)() , int id){
     uint32_t *stack_top = (uint32_t *) task->ESP;
     *(--stack_top) = (uint32_t) execution_code; //esp points to one past the end of our frame , so we first decrement then store
     //also we put the func pointer first so when everything else gets popped , we ret into the func 
-    *(--stack_top) = 0x202;                        // EFLAGS
     *(--stack_top) = 0;  // EBX
     *(--stack_top) = 0;  // ESI
     *(--stack_top) = 0;  // EDI
@@ -67,6 +64,11 @@ task_t *create_task(void (execution_code)() , int id){
     add_task_to_ready_queue(&queue, task);
     insert_task(task);
     num_of_tasks++;
+    //defence field init
+    task->next = 0;
+    task->prev = 0;
+    task->ready_next = 0;
+    task->mutex_wait_next = 0;
     return task; //optional , just if i need it in the future 
 }
 

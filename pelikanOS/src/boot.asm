@@ -13,10 +13,11 @@ align 4 ;ensures the output bytes will be a multiple of 4(pads if needed)
     dd FLAGS
     dd CHECKSUM
 
-section .bss
-align 16
+section .stack nobits write align=16
+global stack_bottom
+global stack_top
 stack_bottom:
-    resb 65536 
+    resb 16384
 stack_top:
 
 section .text
