@@ -46,6 +46,7 @@ task_t *create_task(void (execution_code)() , int id){
     uint32_t *stack_top = (uint32_t *) task->ESP;
     *(--stack_top) = (uint32_t) execution_code; //esp points to one past the end of our frame , so we first decrement then store
     //also we put the func pointer first so when everything else gets popped , we ret into the func 
+    *(--stack_top) = 0x202;                        // EFLAGS
     *(--stack_top) = 0;  // EBX
     *(--stack_top) = 0;  // ESI
     *(--stack_top) = 0;  // EDI
