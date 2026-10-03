@@ -3,6 +3,7 @@
 #include "pmm.h"
 #include "vmm.h"
 #include "vga.h"
+#include "string.h"
 
 static int num_of_tasks;
 static task_t *last_inserted;
@@ -34,6 +35,7 @@ void insert_task(task_t *task){
 
 task_t *create_task(void (execution_code)() , int id){
     task_t *task = (task_t *) kmalloc(sizeof(task_t));
+    memset(task, 0, sizeof(task_t));   // every field starts clean
     uint32_t base = pmm_alloc_contiguous(2);
     vmm_unmap_page(base);
     // guard = base + 4096 guard is 1 frame 
@@ -65,11 +67,6 @@ task_t *create_task(void (execution_code)() , int id){
     add_task_to_ready_queue(&queue, task);
     insert_task(task);
     num_of_tasks++;
-    //defence field init
-    task->next = 0;
-    task->prev = 0;
-    task->ready_next = 0;
-    task->mutex_wait_next = 0;
     return task; //optional , just if i need it in the future 
 }
 
@@ -86,8 +83,8 @@ uint8_t isempty_ready_queue(rd_q *q){
 }
 
 void add_task_to_ready_queue(rd_q *q , task_t *task){
+    task->ready_next = 0;  
     if(!isempty_ready_queue(q)){
-        task->ready_next = 0;
         q->queue_tail->ready_next = task;
         q->queue_tail = task;
     }else{

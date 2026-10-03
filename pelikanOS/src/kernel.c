@@ -15,19 +15,11 @@
 
 mutex_t lock;
 
-void task_a(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("A");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
-void task_b(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("B");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
-void task_c(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("C");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
-void task_d(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("D");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
-void task_e(){asm volatile("sti"); while(1){ mutex_lock(&lock); print("E");  mutex_unlock(&lock);  for(volatile int i=0;i<3000000;i++);} }
-
-
-void idle(){asm volatile("sti"); while(1) asm volatile("hlt"); }
-
-//void task_b(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("B"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
-//void task_c(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("C"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
-//void task_d(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("D"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
-//void task_e(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("E"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_a(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("A"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_b(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("B"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_c(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("C"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_d(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("D"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_e(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("E"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
 
 
 
@@ -61,12 +53,11 @@ void kmain(uint32_t magic, void  *mboot_info){
     //volatile uint32_t *bad = (volatile uint32_t *)0x500000; // 5MB - unmapped
     //uint32_t test = *bad;
     mutex_init(&lock);
-    create_task(idle, 0);
-    create_task(task_a, 1);
-    create_task(task_b, 2);
-    create_task(task_c, 3);
-    create_task(task_d, 4);
-    create_task(task_e, 5);
+    create_task(task_a, 0);
+    create_task(task_b, 1);
+    create_task(task_c, 2);
+    create_task(task_d, 3);
+    create_task(task_e, 4);
   
     schedule();
     while(1){   
