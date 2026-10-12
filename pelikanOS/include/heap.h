@@ -4,5 +4,6 @@
 
 void *kmalloc(uint32_t size);
 void kfree(void *ptr);
+void head_dump();
 
 #endif

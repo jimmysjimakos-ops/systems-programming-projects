@@ -12,6 +12,9 @@
 #include "io.h"
 #include "scheduler.h"
 #include "mutex_lock.h"
+#include "keyboard.h"
+#include "string.h"
+#include "shell.h"
 
 mutex_t lock;
 
@@ -37,9 +40,11 @@ void kmain(uint32_t magic, void  *mboot_info){
     pic_remap();
     pit_init(1000);
     pmm_init(mboot);
+    print("init ok\n"); 
+
     extern uint32_t stack_bottom;   // from boot.asm
     vmm_unmap_page((uint32_t)&stack_bottom - 4096);   // guard below boot stack
-
+    print("vmm ok\n");
 
     //extern uint32_t _kernel_end;
     //char dbuf1[32];
@@ -52,14 +57,26 @@ void kmain(uint32_t magic, void  *mboot_info){
     //print(dbuf2);
     //volatile uint32_t *bad = (volatile uint32_t *)0x500000; // 5MB - unmapped
     //uint32_t test = *bad;
-    mutex_init(&lock);
-    create_task(task_a, 0);
-    create_task(task_b, 1);
-    create_task(task_c, 2);
-    create_task(task_d, 3);
-    create_task(task_e, 4);
+    //mutex_init(&lock);
+    //create_task(task_a, 0);
+    //create_task(task_b, 1);
+    //create_task(task_c, 2);
+    //create_task(task_d, 3);
+    //create_task(task_e, 4);
   
-    schedule();
+    //schedule();
+
+    // in kmain, after keyboard_init() and sti:
+
+    //remember , we build the ringbuf in order to safely capture the producers chars while the terminal(system) is busy with other tasks(i.g. ping)
+    keyboard_init();
+    print("kbd init ok\n");
+
+    asm volatile("sti");
+    print("sti done, type:\n");
+
+    shell_run();
+
     while(1){   
         asm volatile("hlt"); //allows interrupts to happen , halts the execution of kmain only
     }
