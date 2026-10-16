@@ -9,8 +9,8 @@ void isr_handler(struct interrupt_frame *frame){ //this interrupt runs multiple 
     
     if(frame->ir_num == 32){
         outb(0x20, 0x20); // EOI once, before schedule
+        yield();
         return;
-        //yield();   for when scheduling returns!
     }
 
     if(frame->ir_num == 33){

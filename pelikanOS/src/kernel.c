@@ -34,11 +34,12 @@ void pit_init(uint32_t freq){
 }
 
 void kmain(uint32_t magic, void  *mboot_info){
+    asm volatile("cli");
     struct multiboot_info *mboot = (struct multiboot_info *) mboot_info;
     gdt_init();
     idt_init();
     pic_remap();
-    pit_init(1000);
+    pit_init(100);
     pmm_init(mboot);
 
     extern uint32_t stack_bottom;   // from boot.asm
@@ -67,10 +68,13 @@ void kmain(uint32_t magic, void  *mboot_info){
     // in kmain, after keyboard_init() and sti:
 
     //remember , we build the ringbuf in order to safely capture the producers chars while the terminal(system) is busy with other tasks(i.g. ping)
+    // kmain
     keyboard_init();
+    mutex_init(&lock);
+    create_task(shell_run, 0);
+    create_task(task_a, 1);
+    schedule();                  
     asm volatile("sti");
-
-    shell_run();
 
     while(1){   
         asm volatile("hlt"); //allows interrupts to happen , halts the execution of kmain only

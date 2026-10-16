@@ -47,6 +47,7 @@ static void dispatch(const char *line){ //needs to be char for strcmp to work
 } 
 
 void shell_run(){
+    asm volatile("sti");
     char linebuf[129];
     uint32_t linebuf_index = 0;
     memset(linebuf, 0 , 129 * sizeof(uint8_t));
