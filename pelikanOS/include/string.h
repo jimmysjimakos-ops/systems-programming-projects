@@ -5,5 +5,6 @@
 
 void memset(void *buf, uint8_t val, uint32_t size);
 void memcpy(void *dest, const void *src, uint32_t size);
+int strcmp(const char *a , const char *b);
 
 #endif

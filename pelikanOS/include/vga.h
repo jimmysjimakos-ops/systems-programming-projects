@@ -9,7 +9,7 @@ struct vga_state{
 extern struct vga_state vga;
 
 int makeSpace(); 
-int mapToVGA(char s);
-int print(char *s);
+int mapToVGA(const char s);
+int print(const char *s);
 int removeChar();
 uint8_t *print_hex(uint8_t *buf,uint32_t num);

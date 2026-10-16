@@ -40,11 +40,9 @@ void kmain(uint32_t magic, void  *mboot_info){
     pic_remap();
     pit_init(1000);
     pmm_init(mboot);
-    print("init ok\n"); 
 
     extern uint32_t stack_bottom;   // from boot.asm
     vmm_unmap_page((uint32_t)&stack_bottom - 4096);   // guard below boot stack
-    print("vmm ok\n");
 
     //extern uint32_t _kernel_end;
     //char dbuf1[32];
@@ -70,10 +68,7 @@ void kmain(uint32_t magic, void  *mboot_info){
 
     //remember , we build the ringbuf in order to safely capture the producers chars while the terminal(system) is busy with other tasks(i.g. ping)
     keyboard_init();
-    print("kbd init ok\n");
-
     asm volatile("sti");
-    print("sti done, type:\n");
 
     shell_run();
 

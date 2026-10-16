@@ -54,15 +54,6 @@ task_t *create_task(void (execution_code)() , int id){
     *(--stack_top) = 0;  // EDI
     *(--stack_top) = 0;  // EBP 
     task->ESP = (uint32_t) stack_top;
-    /*
-    if(current_task == 0){
-        task->state = TASK_RUNNING; //idle task , task 0
-        current_task = task;
-    }else{  
-        task->state = TASK_READY; //not idle task , other
-        add_task_to_ready_queue(&queue , task); 
-    }
-    */
     task->state = TASK_READY;
     add_task_to_ready_queue(&queue, task);
     insert_task(task);
@@ -108,23 +99,6 @@ task_t *remove_task_from_ready_queue(rd_q *q){
     task->ready_next = 0; //disconnect it from the FIFO list
     return task;
 }
-
-/*
-void schedule(){
-    if(!current_task) return;
-    if(isempty_ready_queue(&queue)) return;  // idle is never dequed
-    
-    if(current_task->state == TASK_RUNNING){
-        current_task->state = TASK_READY;
-        add_task_to_ready_queue(&queue , current_task);
-    }
-    
-    task_t *task = remove_task_from_ready_queue(&queue);
-    task->state = TASK_RUNNING;
-    context_switch(task); //current task is updated in asm
-}
-*/
-
 
 uint32_t scheduler_context;
 void schedule(){

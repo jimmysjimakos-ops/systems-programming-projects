@@ -26,7 +26,7 @@ int makeSpace(){ //every vga.row replaces its contents by the next vga.row
     return 0;
 }
 
-int mapToVGA(char s){
+int mapToVGA(const char s){
     if(s == '\n' && vga.row != 24){
         vga.col = 0;   
         vga.row++;
@@ -52,7 +52,7 @@ int mapToVGA(char s){
     return 0;  //slight performance hinder i think
 }
 
-int print(char *s){ //this is a shared function , 2 threads can access this and run it , which means vga.col and vga.col are shared
+int print(const char *s){ //this is a shared function , 2 threads can access this and run it , which means vga.col and vga.col are shared
     uint32_t flags = save_flags_and_cli();
     int i = 0;
     while(s[i] != '\0'){
