@@ -5,9 +5,12 @@
 #include "scheduler.h"
 #include "keyboard.h"
 
+volatile uint32_t ticks = 0;
+
 void isr_handler(struct interrupt_frame *frame){ //this interrupt runs multiple times , cuz of an IR timer that lives in the hardware , the PIC helps here
     
     if(frame->ir_num == 32){
+        ticks++;
         outb(0x20, 0x20); // EOI once, before schedule
         yield();
         return;

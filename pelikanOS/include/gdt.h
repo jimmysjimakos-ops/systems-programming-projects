@@ -1,3 +1,5 @@
+#ifndef GDT_H
+#define GDT_H
 #include <stdint.h>
 
 struct gdt_entry{
@@ -20,3 +22,5 @@ extern struct gdt_pointer gdt_ptr;
 void gdt_init();
 
 extern void gdt_load();
+
+#endif

@@ -84,7 +84,15 @@ int removeChar(){
 }
 
 
-
+void print_at(uint8_t row, uint8_t col, const char *str){
+    if(row >= 25) return;              // off-screen, ignore
+    uint32_t i = 0;
+    while(str[i] != '\0' && col < 80){ // stop at end of string OR edge of row
+        vga.addr[row * 80 + col] = ((0x0F << 8) | str[i]);
+        i++;
+        col++;
+    }
+}
 
 
 

@@ -1,3 +1,5 @@
+#ifndef IDT_H
+#define IDT_H
 #include <stdint.h>
 
 struct idt_entry{
@@ -21,3 +23,4 @@ void  idt_init();
 
 extern void idt_load();
  
+#endif

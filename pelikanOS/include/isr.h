@@ -1,4 +1,8 @@
+#ifndef ISR_H
+#define ISR_H
 #include <stdint.h>
+
+extern volatile uint32_t ticks;
 
 struct interrupt_frame{
     uint32_t edi;
@@ -17,3 +21,5 @@ struct interrupt_frame{
 };
 
 void isr_handler(struct interrupt_frame *frame);    
+
+#endif

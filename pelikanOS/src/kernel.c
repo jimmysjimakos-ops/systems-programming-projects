@@ -15,6 +15,8 @@
 #include "keyboard.h"
 #include "string.h"
 #include "shell.h"
+#include "clock.h"
+
 
 mutex_t lock;
 
@@ -34,7 +36,7 @@ void pit_init(uint32_t freq){
 }
 
 void kmain(uint32_t magic, void  *mboot_info){
-    asm volatile("cli");
+    asm volatile("cli"); //defensive - no interrputs on start
     struct multiboot_info *mboot = (struct multiboot_info *) mboot_info;
     gdt_init();
     idt_init();
@@ -72,7 +74,7 @@ void kmain(uint32_t magic, void  *mboot_info){
     keyboard_init();
     mutex_init(&lock);
     create_task(shell_run, 0);
-    create_task(task_a, 1);
+    create_task(clock_thread, 1);
     schedule();                  
     asm volatile("sti");
 

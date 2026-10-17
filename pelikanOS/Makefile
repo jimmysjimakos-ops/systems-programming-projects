@@ -1,7 +1,7 @@
 all: kernel.bin
 
-kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o keyboard.o shell.o
-	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o keyboard.o shell.o -o kernel.bin
+kernel.bin:	linker.ld boot.o kernel.o gdt.o idt.o idt_asm.o pic.o gdt_asm.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o keyboard.o shell.o clock.o
+	i686-linux-gnu-ld -T linker.ld -m elf_i386 boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o keyboard.o shell.o clock.o -o kernel.bin
 
 boot.o: src/boot.asm
 	nasm -f elf32 src/boot.asm -o boot.o
@@ -66,6 +66,9 @@ keyboard.o:	src/keyboard.c
 shell.o:	src/shell.c
 	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/shell.c -o shell.o
 
+clock.o:	src/clock.c
+	i686-linux-gnu-gcc -g -ffreestanding -Wall -Wextra -I include -c src/clock.c -o clock.o
+
 iso: kernel.bin	
 	cp kernel.bin iso/boot/kernel.bin
 	grub-mkrescue -o pelikanos.iso iso
@@ -74,7 +77,7 @@ run: iso
 	qemu-system-i386 -cdrom pelikanos.iso
 
 clean:	
-	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o keyboard.o shell.o kernel.bin pelikanos.iso iso/boot/kernel.bin
+	rm -f boot.o kernel.o gdt.o gdt_asm.o idt.o idt_asm.o pic.o isr.o isr_asm.o vga.o pmm.o string.o paging.o heap.o vmm.o itoa.o scheduler.o swtch.o mutex_lock.o keyboard.o shell.o clock.o kernel.bin pelikanos.iso iso/boot/kernel.bin
 
 debug: iso
 	qemu-system-i386 -cdrom pelikanos.iso -s -S &
