@@ -69,6 +69,35 @@ task_t *get_current_task(){
     return current_task;
 } 
 
+static const char *state_name(uint8_t s){
+    switch(s){
+        case TASK_BLOCKED: return "BLOCKED";
+        case TASK_READY:   return "READY";
+        case TASK_RUNNING: return "RUNNING";
+        case TASK_DEAD:    return "DEAD";
+        default:           return "?";
+    }
+}
+
+void scheduler_list_tasks(void){
+    if(!last_inserted){
+        print("no tasks\n");
+        return;
+    }
+    task_t *spawnpoint = current_task;
+    char buf[32];
+    do{
+        print("id: ");
+        itoa(spawnpoint->id, buf);
+        print(buf);
+        print("  state: ");
+        print(state_name(spawnpoint->state));   // see below
+        print("\n");
+        spawnpoint = spawnpoint->next;
+    }while(spawnpoint != current_task);
+
+}
+
 uint8_t isempty_ready_queue(rd_q *q){
     return q->queue_head == 0;
 }

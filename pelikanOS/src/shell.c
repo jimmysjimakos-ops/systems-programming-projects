@@ -2,6 +2,7 @@
 #include "vga.h"
 #include "string.h"
 #include "itoa.h"
+#include "scheduler.h"
 
 typedef struct command{
     char *name;
@@ -10,8 +11,9 @@ typedef struct command{
 
 static void cmd_help(void);
 static void cmd_clear(void);
+static void cmd_ps(void);
 
-static command_t commands[] = {{"help" , cmd_help} , {"clear" , cmd_clear}};
+static command_t commands[] = {{"help" , cmd_help} , {"clear" , cmd_clear} , {"ps" , cmd_ps}};
 
 #define NUM_COMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -29,6 +31,11 @@ static void cmd_clear(void){
     for(int i = 0; i < 80 * 25; i++){
         removeChar();
     }
+}
+
+
+static void cmd_ps(void){
+    scheduler_list_tasks();
 }
 
 static void dispatch(const char *line){ //needs to be char for strcmp to work

@@ -39,5 +39,6 @@ void ready_queue_init(rd_q *q);
 extern void swtch(uint32_t *old_esp, uint32_t new_esp);
 void schedule();
 void yield();
+void scheduler_list_tasks(void);
 
 #endif
