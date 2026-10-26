@@ -3,6 +3,7 @@
 #include "string.h"
 #include "itoa.h"
 #include "scheduler.h"
+#include "pmm.h"
 
 typedef struct command{
     char *name;
@@ -12,8 +13,9 @@ typedef struct command{
 static void cmd_help(void);
 static void cmd_clear(void);
 static void cmd_ps(void);
+static void cmd_mem(void);
 
-static command_t commands[] = {{"help" , cmd_help} , {"clear" , cmd_clear} , {"ps" , cmd_ps}};
+static command_t commands[] = {{"help" , cmd_help} , {"clear" , cmd_clear} , {"ps" , cmd_ps} , {"mem" , cmd_mem}};
 
 #define NUM_COMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -33,9 +35,16 @@ static void cmd_clear(void){
     }
 }
 
-
 static void cmd_ps(void){
     scheduler_list_tasks();
+}
+
+static void cmd_mem(void){
+    char buf[32];
+    itoa(pmm_free_count(), buf);
+    print("free frames: ");
+    print(buf);
+    print("\n");
 }
 
 static void dispatch(const char *line){ //needs to be char for strcmp to work

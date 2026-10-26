@@ -4,21 +4,17 @@
 #include "vmm.h"
 #include "vga.h"
 #include "string.h"
+#include "io.h"
 
 static int num_of_tasks;
 static task_t *last_inserted;
 task_t *current_task;
+task_t *reaper_task;
 rd_q queue = {0,0};
-
-
-
-void ready_queue_init(rd_q *q){  //may stand unused
-    q->queue_head = 0;
-    q->queue_tail = 0;
-}
-
+dd_q dead_q = {0,0};
 
 void insert_task(task_t *task){
+    uint32_t flags = save_flags_and_cli();
     if(last_inserted){
         task->next = last_inserted->next; //link to the first task in the list
         task->prev = last_inserted;
@@ -30,10 +26,27 @@ void insert_task(task_t *task){
     }
     
     last_inserted = task;
+    restore_flags(flags);
+}
+
+void remove_task_from_circular_list(task_t *task){
+    uint32_t flags = save_flags_and_cli();
+    if(task->next == task){          // only node in the list
+        last_inserted = 0;
+    }else{
+        task->prev->next = task->next;
+        task->next->prev = task->prev;
+        if(last_inserted == task){
+            last_inserted = task->next; //repoint to surviving node
+        }
+    }
+    task->next = 0;
+    task->prev = 0;
+    restore_flags(flags);
 }
 
 
-task_t *create_task(void (execution_code)() , int id){
+task_t *create_task(void (execution_code)() , int id , int type){
     task_t *task = (task_t *) kmalloc(sizeof(task_t));
     memset(task, 0, sizeof(task_t));   // every field starts clean
     uint32_t base = pmm_alloc_contiguous(2);
@@ -54,8 +67,13 @@ task_t *create_task(void (execution_code)() , int id){
     *(--stack_top) = 0;  // EDI
     *(--stack_top) = 0;  // EBP 
     task->ESP = (uint32_t) stack_top;
-    task->state = TASK_READY;
-    add_task_to_ready_queue(&queue, task);
+    if(type == 1){
+        task->state = TASK_BLOCKED;
+        reaper_task = task;
+    }else if(type == 0){
+        task->state = TASK_READY;
+        add_task_to_ready_queue(&queue, task);
+    }
     insert_task(task);
     num_of_tasks++;
     return task; //optional , just if i need it in the future 
@@ -103,6 +121,7 @@ uint8_t isempty_ready_queue(rd_q *q){
 }
 
 void add_task_to_ready_queue(rd_q *q , task_t *task){
+    uint32_t flags = save_flags_and_cli();
     task->ready_next = 0;  
     if(!isempty_ready_queue(q)){
         q->queue_tail->ready_next = task;
@@ -111,11 +130,14 @@ void add_task_to_ready_queue(rd_q *q , task_t *task){
         q->queue_head=task;
         q->queue_tail=task;
     }
+    restore_flags(flags);
 }
 
 
 task_t *remove_task_from_ready_queue(rd_q *q){
+    uint32_t flags = save_flags_and_cli();
     if(isempty_ready_queue(q)){
+        restore_flags(flags);
         return 0;
     }
     task_t *task = q->queue_head;
@@ -126,6 +148,7 @@ task_t *remove_task_from_ready_queue(rd_q *q){
         q->queue_head = task->ready_next;
     }
     task->ready_next = 0; //disconnect it from the FIFO list
+    restore_flags(flags);
     return task;
 }
 
@@ -144,6 +167,13 @@ void schedule(){
         if(current_task->state == TASK_RUNNING){
             current_task->state = TASK_READY;
             add_task_to_ready_queue(&queue, current_task);
+        }else if(current_task->state == TASK_DEAD){
+            add_task_to_dead_queue(&dead_q , current_task);
+            if(reaper_task->state == TASK_BLOCKED){
+                reaper_task->state = TASK_READY;
+                add_task_to_ready_queue(&queue, reaper_task);
+            }
+            
         }
     }
 }
@@ -151,4 +181,70 @@ void schedule(){
 
 void yield(){
     swtch(&current_task->ESP, scheduler_context);
+}
+
+void thread_exit(){
+    current_task->state = TASK_DEAD;
+    yield();
+}
+
+uint8_t isempty_dead_queue(dd_q *q){
+    return q->dead_head == 0;
+}
+
+void add_task_to_dead_queue(dd_q *q , task_t *task){
+    uint32_t flags = save_flags_and_cli();
+    task->dead_next = 0;  
+    if(!isempty_dead_queue(q)){
+        q->dead_tail->dead_next = task;
+        q->dead_tail = task;
+    }else{
+        q->dead_head=task;
+        q->dead_tail=task;
+    }
+    restore_flags(flags);
+}
+
+
+task_t *remove_task_from_dead_queue(dd_q *q){
+    uint32_t flags = save_flags_and_cli();
+    if(isempty_dead_queue(q)){
+        restore_flags(flags);
+        return 0;
+    }
+    task_t *task = q->dead_head;
+    if(task->dead_next== 0){
+        q->dead_head = 0;
+        q->dead_tail = 0;
+    }else{
+        q->dead_head = task->dead_next;
+    }
+    task->dead_next = 0; //disconnect it from the FIFO list
+    restore_flags(flags);
+    return task;
+}
+
+static void reaper_thread(void){
+    asm volatile("sti");
+    while(1){
+        uint32_t flags = save_flags_and_cli();
+        task_t *corpse = remove_task_from_dead_queue(&dead_q);
+        if(!corpse){
+            reaper_task->state = TASK_BLOCKED;
+            restore_flags(flags);
+            yield();
+            continue;
+        }
+        remove_task_from_circular_list(corpse); //unlink
+        uint32_t guard = corpse->stack_base - 4096;
+        vmm_map_page(guard, guard);          // restore identity mapping on the guard frame
+        pmm_free_frame(guard);
+        pmm_free_frame(corpse->stack_base);
+        kfree(corpse);
+    }
+}
+
+
+void spawn_reaper(void){   //reaper API
+    create_task(reaper_thread, 99, 1);
 }

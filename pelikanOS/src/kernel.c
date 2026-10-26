@@ -20,9 +20,9 @@
 
 mutex_t lock;
 
-void task_a(){asm volatile("sti");  while(1){ for(volatile int i=0;i<3000000;i++); } }
-void task_b(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("B"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
-void task_c(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("C"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
+void task_a(){asm volatile("sti");  while(1){ for(volatile int i=0;i<3000000;i++); thread_exit();} }
+void task_b(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("B"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); thread_exit();} }
+void task_c(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("C"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); thread_exit();} }
 void task_d(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("D"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
 void task_e(){asm volatile("sti");  while(1){ mutex_lock(&lock); print("E"); mutex_unlock(&lock); for(volatile int i=0;i<3000000;i++); } }
 
@@ -73,9 +73,10 @@ void kmain(uint32_t magic, void  *mboot_info){
     // kmain
     keyboard_init();
     mutex_init(&lock);
-    create_task(shell_run, 0);
-    create_task(clock_thread, 1);
-    create_task(task_a, 2);
+    spawn_reaper();
+    create_task(shell_run, 0 , 0);
+    create_task(clock_thread, 1 , 0);
+
     schedule();                  
     asm volatile("sti");
 

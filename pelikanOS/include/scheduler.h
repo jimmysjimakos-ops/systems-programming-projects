@@ -18,6 +18,7 @@ typedef struct task{   //this should be encapsulated
     struct task *prev; //purely cosmetic at this point
     struct task *ready_next;
     struct task *mutex_wait_next;
+    struct task *dead_next;
 }task_t;
 
 typedef struct ready_queue{
@@ -25,20 +26,30 @@ typedef struct ready_queue{
     task_t *queue_tail;
 }rd_q;
 
+typedef struct dead_queue{
+    task_t *dead_head;
+    task_t *dead_tail;
+}dd_q;
+
 uint8_t isempty_ready_queue(rd_q *q);
 void add_task_to_ready_queue(rd_q *q , task_t *task);
 task_t *remove_task_from_ready_queue(rd_q *q);
-task_t *create_task(void (*func)() , int id);
+task_t *create_task(void (*func)() , int id , int type);
 void insert_task(task_t *task);
-void remove_task(uint32_t *task);
+void remove_task_from_circular_list(task_t *task);
 int get_num_of_tasks();
 task_t *get_current_task();
-//extern void context_switch(task_t *task); 
 extern rd_q queue;
-void ready_queue_init(rd_q *q);
 extern void swtch(uint32_t *old_esp, uint32_t new_esp);
 void schedule();
 void yield();
 void scheduler_list_tasks(void);
+extern dd_q dead_q;
+extern task_t *reaper_task;
+uint8_t isempty_dead_queue(dd_q *q);
+void add_task_to_dead_queue(dd_q *q , task_t *task);
+task_t *remove_task_from_dead_queue(dd_q *q);
+void thread_exit();   // you have this
+void spawn_reaper(void);
 
 #endif

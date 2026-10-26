@@ -11,5 +11,6 @@ void pmm_init(struct multiboot_info *mboot);
 uint32_t pmm_alloc_frame();
 void pmm_free_frame(uint32_t frame_addr);
 uint32_t pmm_alloc_contiguous(int n);
+uint32_t pmm_free_count(void);
 
 #endif

@@ -91,7 +91,6 @@ uint32_t pmm_alloc_contiguous(int n){//sliding window type
     uint32_t end= 0;
     while(end < MAX_FRAMES){
         if(!(bitmap[end / 8] & (1 << (end % 8)))){
-            
             if((end - start + 1) == n){
                 found = 1;
                 break;
@@ -109,4 +108,14 @@ uint32_t pmm_alloc_contiguous(int n){//sliding window type
         bitmap[f / 8] |= (1 << (f % 8));
     }
     return start * 4096;
+}
+
+uint32_t pmm_free_count(void){
+    uint32_t free = 0;
+    for(uint32_t f = 0; f < MAX_FRAMES; f++){
+        if(!(bitmap[f / 8] & (1 << (f % 8)))){
+            free++;
+        }
+    }
+    return free;
 }
