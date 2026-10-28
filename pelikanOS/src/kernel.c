@@ -72,13 +72,12 @@ void kmain(uint32_t magic, void  *mboot_info){
     //remember , we build the ringbuf in order to safely capture the producers chars while the terminal(system) is busy with other tasks(i.g. ping)
     // kmain
     keyboard_init();
-    mutex_init(&lock);
+    //mutex_init(&lock);
     spawn_reaper();
     create_task(shell_run, 0 , 0);
     create_task(clock_thread, 1 , 0);
 
-    schedule();                  
-    asm volatile("sti");
+    schedule();   
 
     while(1){   
         asm volatile("hlt"); //allows interrupts to happen , halts the execution of kmain only
