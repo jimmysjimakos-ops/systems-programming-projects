@@ -4,6 +4,7 @@
 #include "itoa.h"
 #include "scheduler.h"
 #include "pmm.h"
+#include "io.h"
 
 typedef struct command{
     char *name;
@@ -19,6 +20,7 @@ static void worker_counter(void){
     asm volatile("sti");
     volatile uint32_t n = 0;
     while(1){
+        check_kill(); //helper func , checks and then kills if true
         n++;
         for(volatile int i = 0; i < 3000000; i++);
     }
@@ -36,14 +38,16 @@ static spawnable_t spawnables[] = {
 };
 #define NUM_SPAWNABLES (sizeof(spawnables) / sizeof(spawnables[0]))
 
-static char spawn_arg[129]; //spawn func's argument
+static char spawn_arg[129]; // spawn funcs argument
 static int next_spawn_id = 100;   // ids for spawned tasks sp they avoid clashing with fixed ones
+static char kill_arg[129]; // kill funcs argument
 
 static void cmd_help(void);
 static void cmd_clear(void);
 static void cmd_ps(void);
 static void cmd_mem(void);
 static void cmd_spawn(void);
+static void cmd_kill(void);
 
 static command_t commands[] = {
     {"help" , cmd_help},
@@ -51,6 +55,7 @@ static command_t commands[] = {
     {"ps"   , cmd_ps},
     {"mem"  , cmd_mem},
     {"spawn", cmd_spawn},
+    {"kill", cmd_kill},
 };
 #define NUM_COMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -111,6 +116,45 @@ static void cmd_spawn(void){
     print("\n");
 }
 
+static void cmd_kill(){
+    if(kill_arg[0] == '\0'){
+        print("usage: kill <id>\n");
+        return;
+    }
+    int i = 0;
+    while(kill_arg[i] != '\0'){
+        if(kill_arg[i] < '0' || kill_arg[i] > '9'){
+            print("Not valid id, must be a number\n");
+            return;
+        }
+        i++;
+    }
+    uint32_t id = atoi(kill_arg);
+    task_t *ids[10];
+    uint8_t found = 0;
+
+    for(int i = 0; i < 10; i++){
+        ids[i] = (task_t *)0xFFFFFFFF; //works but type cast to be safe
+    }   
+    uint32_t flags = save_flags_and_cli();
+    scheduler_get_tasks(ids); //could easily use the count returned by this func
+    for(int i = 0; i < 10 && ids[i] != (task_t*) 0xFFFFFFFF; i++){
+        if(ids[i]->id == id){
+            ids[i]->should_die = 1;
+            found = 1;
+            break;
+        }
+    }
+    restore_flags(flags);
+    if(found){ 
+        print("kill requested\n"); 
+    }else{ 
+        print("no such task: ");
+        print(kill_arg);
+        print("\n");
+    }
+}
+
 static void dispatch(const char *line){
     if(line[0] == '\0'){
         return;
@@ -129,11 +173,14 @@ static void dispatch(const char *line){
     if(line[i] == ' '){
         i++;   // skip the single separating space
         while(line[i] != '\0' && j < 128){
-            spawn_arg[j++] = line[i++];
+            spawn_arg[j] = line[i];
+            kill_arg[j] = line[i];
+            i++;
+            j++;
         }
     }
     spawn_arg[j] = '\0'; // this and the starting at 0 index on each dispatch call ensures that spawn_arg is never REUSED WITH THE SAME CONTENTS 
-
+    kill_arg[j] = '\0';
     for(uint32_t k = 0; k < NUM_COMMANDS; k++){
         if(strcmp(cmd, commands[k].name) == 0){
             commands[k].fn();

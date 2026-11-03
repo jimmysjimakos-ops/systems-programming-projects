@@ -14,6 +14,10 @@ typedef struct task{   //this should be encapsulated
     uint8_t state;
     uint32_t stack_base;
     uint32_t id;
+    uint8_t should_die;
+    void (*kill_self)(struct task *task); //pointer to death func (method like shi)
+    void *allocated_list_of_pointers[10]; //up to 10 allocs per task - no more
+    uint8_t alloc_count;
     struct task *next; //purely cosmetic at this point
     struct task *prev; //purely cosmetic at this point
     struct task *ready_next;
@@ -51,5 +55,8 @@ void add_task_to_dead_queue(dd_q *q , task_t *task);
 task_t *remove_task_from_dead_queue(dd_q *q);
 void thread_exit();   // you have this
 void spawn_reaper(void);
+uint8_t is_empty_task_list(void);
+int scheduler_get_tasks(task_t **out);
+void check_kill(void);
 
 #endif

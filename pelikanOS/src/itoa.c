@@ -27,3 +27,13 @@ void itoa(uint32_t num , char *buf){
     
     return;
 }
+
+int atoi(const char *s){
+    int result = 0;
+    int i = 0;
+    while(s[i] >= '0' && s[i] <= '9'){
+        result = result * 10 + (s[i] - '0');
+        i++;
+    }
+    return result;
+}

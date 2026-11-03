@@ -13,6 +13,8 @@ task_t *reaper_task;
 rd_q queue = {0,0};
 dd_q dead_q = {0,0};
 
+void kill_self(task_t *task);
+
 void insert_task(task_t *task){
     uint32_t flags = save_flags_and_cli();
     if(last_inserted){
@@ -45,6 +47,9 @@ void remove_task_from_circular_list(task_t *task){
     restore_flags(flags);
 }
 
+uint8_t is_empty_task_list(void){
+    return current_task == 0;
+}
 
 task_t *create_task(void (execution_code)() , int id , int type){
     task_t *task = (task_t *) kmalloc(sizeof(task_t));
@@ -57,6 +62,9 @@ task_t *create_task(void (execution_code)() , int id , int type){
     task->EIP = (uint32_t) execution_code;
     task->page_directory = vmm_get_kernel_directory(); //page_dir in vmm is static and needs a getter func
     task->id = id; 
+    task->should_die = 0;
+    task->alloc_count = 0;
+    task->kill_self = kill_self;
     //when a new task is loaded for the first time , pop and ret read garbage --> must push fake data
     uint32_t *stack_top = (uint32_t *) task->ESP;
     *(--stack_top) = (uint32_t) execution_code; //esp points to one past the end of our frame , so we first decrement then store
@@ -113,8 +121,27 @@ void scheduler_list_tasks(void){
         print("\n");
         spawnpoint = spawnpoint->next;
     }while(spawnpoint != current_task);
-
 }
+
+int scheduler_get_tasks(task_t **out){
+    if(is_empty_task_list()){
+        return 0;   
+    }
+    int count = 0;
+    task_t *walk = current_task;
+    uint32_t flags = save_flags_and_cli();
+    do{
+        if(count >= 10){
+            break;
+        }
+        out[count] = walk;
+        count++;
+        walk = walk->next;
+    }while(walk != current_task);
+    restore_flags(flags);
+    return count;
+}
+
 
 uint8_t isempty_ready_queue(rd_q *q){
     return q->queue_head == 0;
@@ -186,6 +213,24 @@ void yield(){
 void thread_exit(){
     current_task->state = TASK_DEAD;
     yield();
+}
+
+void kill_self(task_t *task){
+    if(task->alloc_count != 0){
+        for(int i = 0; i < task->alloc_count; i++){
+            kfree(task->allocated_list_of_pointers[i]);
+        } 
+    }
+    thread_exit();
+    return; //maybe this is not needed since the thread dies :/
+}
+
+
+void check_kill(void){  //helper func for checking and killing tasks
+    task_t *t = get_current_task();
+    if(t->should_die){
+        t->kill_self(t);
+    }
 }
 
 uint8_t isempty_dead_queue(dd_q *q){
