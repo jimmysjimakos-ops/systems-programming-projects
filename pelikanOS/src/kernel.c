@@ -16,6 +16,7 @@
 #include "string.h"
 #include "shell.h"
 #include "clock.h"
+#include "pci.h"
 
 
 mutex_t lock;
@@ -71,14 +72,21 @@ void kmain(uint32_t magic, void  *mboot_info){
 
     //remember , we build the ringbuf in order to safely capture the producers chars while the terminal(system) is busy with other tasks(i.g. ping)
     // kmain
-    keyboard_init();
+    //keyboard_init();
     //mutex_init(&lock);
-    spawn_reaper();
-    create_task(shell_run, 0 , 0);
-    create_task(clock_thread, 1 , 0);
+    //spawn_reaper();
+    //create_task(shell_run, 0 , 0);
+    //create_task(clock_thread, 1 , 0);
 
-    schedule();   
-
+    //schedule();   
+    uint32_t bar0 = vmm_map_bar0();
+    
+    volatile uint32_t *regs = (volatile uint32_t *)bar0;
+    uint32_t status = regs[0x0008 / 4];//alternative way to write regs[2] , claude says its better this way , idk
+    char buf[20];
+    itoa_hex(buf , status);
+    print(buf);
+    
     while(1){   
         asm volatile("hlt"); //allows interrupts to happen , halts the execution of kmain only
     }

@@ -5,6 +5,7 @@
 #include "scheduler.h"
 #include "pmm.h"
 #include "io.h"
+#include "pci.h"
 
 typedef struct command{
     char *name;
@@ -48,6 +49,7 @@ static void cmd_ps(void);
 static void cmd_mem(void);
 static void cmd_spawn(void);
 static void cmd_kill(void);
+static void cmd_lspci(void);
 
 static command_t commands[] = {
     {"help" , cmd_help},
@@ -56,6 +58,7 @@ static command_t commands[] = {
     {"mem"  , cmd_mem},
     {"spawn", cmd_spawn},
     {"kill", cmd_kill},
+    {"lspci", cmd_lspci}
 };
 #define NUM_COMMANDS (sizeof(commands) / sizeof(commands[0]))
 
@@ -153,6 +156,10 @@ static void cmd_kill(){
         print(kill_arg);
         print("\n");
     }
+}
+
+static void cmd_lspci(){
+    pci_scan();
 }
 
 static void dispatch(const char *line){

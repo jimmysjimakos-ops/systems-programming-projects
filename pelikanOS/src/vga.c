@@ -119,7 +119,7 @@ uint8_t *print_hex(uint8_t *buf,uint32_t num){ //works for both byte AND uint
     the issue is this prints it reversed , so ill have to reverse it , i can instead work top down
 */
 
-uint8_t *print_hex(uint8_t *buf,uint32_t num){ //works for both byte AND uint
+uint8_t *itoa_hex(uint8_t *buf,uint32_t num){ //works for both byte AND uint
     uint32_t nibble;
     for(int i = 7; i > -1; i--){
         nibble = (num >> (i * 4)) & 0x0F;
